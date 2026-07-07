@@ -75,7 +75,7 @@ class TaskRepository:
             "SELECT * FROM tarefa WHERE id_tarefa = %s",
             (id_tarefa,),
         )
-        linha = cursor.fetchnone()
+        linha = cursor.fetchone()
         cursor.close()
         if linha is None:
             return None

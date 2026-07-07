@@ -52,7 +52,7 @@ class ListRepository:
     def listar_por_usuario(self, id_usuario: int) -> list[Lista]:
         cursor = self.conexao.cursor(dictionary=True)
         cursor.execute(
-            "SELECT id_lista, id_usuario, nome, criado_em FROM lista WHERE id_usuario %s ORDER BY id_lista",
+            "SELECT id_lista, id_usuario, nome, criado_em FROM lista WHERE id_usuario = %s ORDER BY id_lista",
             (id_usuario,),
         )
         linhas = cursor.fetchall()
@@ -70,9 +70,9 @@ class ListRepository:
     def buscar_por_id(self, id_lista: int) -> Optional[Lista]:
         cursor = self.conexao.cursor(dictionary=True)
         cursor.execute(
-            "SELECT id_lista, id_usuario, nome, criado_em FROM lista WHERE id_lista = %s", 
+            "SELECT id_lista, id_usuario, nome, criado_em FROM lista WHERE id_lista = %s", (id_lista,)
         )
-        linha = cursor.fetchnone()
+        linha = cursor.fetchone()
         cursor.close()
         if linha is None:
             return None
@@ -96,6 +96,10 @@ class ListRepository:
     
     def remover(self, id_lista: int) -> bool:
         cursor = self.conexao.cursor()
+        cursor.execute(
+    "DELETE FROM lista WHERE id_lista = %s",
+    (id_lista,),
+    )
         self.conexao.commit()
         afetados = cursor.rowcount > 0
         cursor.close()

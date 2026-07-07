@@ -1,11 +1,10 @@
 from typing import Optional
 
-from dados.lista_repository import ListaRepository
+from dados.list_repository import ListaRepository
 from dominio.lista import Lista
 
 
 class ListaService:
-    """Camada de negócio: aplica validações e regras da lista de tarefas."""
 
     def __init__(self, repositorio: ListaRepository) -> None:
         self.repositorio = repositorio
