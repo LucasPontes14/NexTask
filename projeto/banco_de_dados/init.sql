@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS tarefa(
     titulo VARCHAR(200) NOT NULL,
     descricao TEXT,
     prioridade ENUM('baixa', 'media', 'alta') NOT NULL DEFAULT 'media',
-    status ENUM('pendente', 'em andamento', 'concluida') NOT NULL DEFAULT 'pendente',
+    status ENUM('pendente', 'em_andamento', 'concluida') NOT NULL DEFAULT 'pendente',
+    data_inicio DATE,
     data_venc DATE,
     hora_venc TIME,
     criado_em DATETIME NOT NULL

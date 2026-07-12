@@ -1,12 +1,12 @@
 from typing import Optional
 
-from dados.list_repository import ListaRepository
-from dominio.lista import Lista
+from src.dados.list_repository import ListRepository
+from src.dominio.lista import Lista
 
 
 class ListaService:
 
-    def __init__(self, repositorio: ListaRepository) -> None:
+    def __init__(self, repositorio: ListRepository) -> None:
         self.repositorio = repositorio
 
     def cadastrar_lista(self, id_usuario: int, nome: str) -> Lista:
@@ -20,9 +20,9 @@ class ListaService:
         if len(nome_limpo) > 100:
             raise ValueError("O nome da lista não pode ultrapassar 100 caracteres.")
 
-        lista = Lista(id=None, id_usuario=id_usuario, nome=nome_limpo)
+        lista = Lista(id_lista=None, id_usuario=id_usuario, nome=nome_limpo, criado_em=None)  
         novo_id = self.repositorio.adicionar(lista)
-        lista.id = novo_id
+        lista.id_lista = novo_id 
         return lista
 
     def listar_por_usuario(self, id_usuario: int) -> list[Lista]:
