@@ -59,6 +59,21 @@ class TaskRepository:
         cursor.close()
         return [self._linha_para_tarefa(l) for l in linhas]
 
+    def listar_por_usuario(self, id_usuario: int) -> list[Tarefa]:
+        cursor = self.conexao.cursor(dictionary=True)
+        cursor.execute(
+            """
+            SELECT t.* FROM tarefa t
+            INNER JOIN lista l ON t.id_lista = l.id_lista
+            WHERE l.id_usuario = %s
+            ORDER BY t.id_tarefa
+            """,
+            (id_usuario,),
+        )
+        linhas = cursor.fetchall()
+        cursor.close()
+        return [self._linha_para_tarefa(l) for l in linhas]
+
     def listar_por_lista(self, id_lista: int) -> list[Tarefa]:
         cursor = self.conexao.cursor(dictionary=True)
         cursor.execute(

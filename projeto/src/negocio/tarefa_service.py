@@ -50,7 +50,16 @@ class TarefaService:
             raise ValueError("O ID da lista deve ser um número inteiro positivo.")
         return self.repositorio.listar_por_lista(id_lista)
 
+    def listar_por_usuario(self, id_usuario: int) -> list[Tarefa]:
+        """Lista apenas as tarefas cujas listas pertencem a este usuário."""
+        if id_usuario <= 0:
+            raise ValueError("O ID do usuário deve ser um número inteiro positivo.")
+        return self.repositorio.listar_por_usuario(id_usuario)
+
     def listar_todas(self) -> list[Tarefa]:
+        """ATENÇÃO: retorna tarefas de TODOS os usuários, sem filtro.
+        Não usar na interface — apenas para uso administrativo/depuração.
+        Para exibir tarefas de um usuário, use listar_por_usuario()."""
         return self.repositorio.listar_todas()
 
     def buscar_tarefa_por_id(self, id_tarefa: int) -> Optional[Tarefa]:

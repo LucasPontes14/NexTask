@@ -41,7 +41,8 @@ def _formatar_data(valor) -> str:
 class TelaPrincipal(ctk.CTkFrame):
     def __init__(self, pai, usuario, usuario_service, lista_service, tarefa_service):
         super().__init__(pai, fg_color=PRETO)
-        self.pai             = pai
+
+        self.pai              = pai
         self.usuario         = usuario
         self.usuario_service = usuario_service
         self.lista_service   = lista_service
@@ -312,7 +313,7 @@ class TelaPrincipal(ctk.CTkFrame):
             w.destroy()
 
         if self.lista_selecionada is None:
-            tarefas = self.tarefa_service.listar_todas()
+            tarefas = self.tarefa_service.listar_por_usuario(self.usuario.id_usuario)
             titulo  = "Todas as tarefas"
         else:
             tarefas = self.tarefa_service.listar_tarefas(
@@ -520,7 +521,7 @@ class TelaPrincipal(ctk.CTkFrame):
             self._carregar_tarefas()
     
     def _abrir_configuracoes(self):
-        janela = JanelaEditarUsuario(master = self, usuario = self.usuario, pai=self.pai, usuario_service = self.usuario_service,
+        janela = JanelaEditarUsuario(master = self, usuario = self.usuario, usuario_service = self.usuario_service,
                                       callback_atualizar = self._atualizar_usuario_na_tela)
 
     def _atualizar_usuario_na_tela(self, usuario):
@@ -528,13 +529,15 @@ class TelaPrincipal(ctk.CTkFrame):
         self.label_usuario.configure(text=self.usuario.nome.split()[0].lower())
 
     def _sair(self):
-        resposta = messagebox.askyesno("Atenção!", "Quer mesmo sair da sua conta?")
-        if not resposta:
+        confirmar = messagebox.askyesno("Sair", "Deseja realmente sair da sua conta?")
+        if not confirmar:
             return
+
         pai = self.pai
-        for jan in pai.winfo_children():
-            jan.destroy()
+        for widget in pai.winfo_children():
+            widget.destroy()
         pai._construir_ui()
+
 
 class _JanelaTarefaBase(ctk.CTkToplevel):
 
@@ -704,9 +707,9 @@ class JanelaEditarTarefa(_JanelaTarefaBase):
 
 # Tela de Configurações
 class JanelaEditarUsuario(ctk.CTkToplevel):
-    def __init__(self, pai, master, usuario, usuario_service, callback_atualizar=None):
+    def __init__(self, master, usuario, usuario_service, callback_atualizar=None):
         super().__init__(master)
-        self.pai = pai
+        self.pai = master
         self.usuario = usuario
         self.usuario_service = usuario_service
         self.callback_atualizar = callback_atualizar
@@ -746,7 +749,7 @@ class JanelaEditarUsuario(ctk.CTkToplevel):
         self.label_status.pack(anchor="w", padx=20, pady=(0, 4))
         #Botões
         frame_botoes = ctk.CTkFrame(card, fg_color="transparent")
-        frame_botoes.pack(fill="x",padx=20, pady=0)
+        frame_botoes.pack(fill="x",padx=20, pady=20)
         #Botão Salvar
         ctk.CTkButton(frame_botoes, text="Salvar alterações", font=("JetBrains Mono", 13, "bold"), fg_color=VERDE_NEON, hover_color=VERDE_ESC, text_color=PRETO, height=42, corner_radius=5, command=self._salvar).pack(fill="x")
         #Botão Cancelar
@@ -761,9 +764,16 @@ class JanelaEditarUsuario(ctk.CTkToplevel):
         if not resposta:
             return
         pai = self.pai
-        for jan in pai.winfo_children():
-            jan.destroy()
-        pai._construir_ui()
+        messagebox.showinfo(
+        "Conta excluída",
+        "Sua conta foi excluída com sucesso."
+    )
+        tela_principal = self.pai
+        app = tela_principal.pai
+        self.destroy()
+        tela_principal.destroy()
+        app._construir_ui()
+
 
     def _salvar(self):
         nome = self.entry_nome.get().strip()
