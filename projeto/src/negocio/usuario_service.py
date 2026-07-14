@@ -76,6 +76,19 @@ class UsuarioService:
         usuario.nome = nome_limpo
         usuario.email = email_limpo
         return self.repositorio.atualizar(usuario)
+    
+    def atualizar_senha(self, id_usuario: int, senha: str, confirmar_senha: str):
+        if not senha:
+            raise ValueError("A senha não pode ficar vazia.")
+        if len(senha)<6:
+            raise ValueError("A senha deve possuir mais de 6 caracteres.")
+        if len(senha) > 255:
+            raise ValueError("A senha não pode ultrapassar 255 caracteres.")
+        if senha != confirmar_senha:
+            raise ValueError("As senhas não coincidem,")
+        usuario = self.repositorio.buscar_por_id(id_usuario)
+        usuario.senha = senha
+        self.repositorio.atualizar(usuario)
 
     def excluir_usuario(self, id_usuario: int) -> bool:
         if id_usuario <= 0:

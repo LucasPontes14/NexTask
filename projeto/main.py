@@ -12,7 +12,7 @@ from src.negocio.tarefa_service import TarefaService
 conexao = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="Debora091403#",
+    password="labinfo",
     database="db_tarefas"
 )
 

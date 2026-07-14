@@ -39,12 +39,13 @@ def _formatar_data(valor) -> str:
 
 
 class TelaPrincipal(ctk.CTkFrame):
-    def __init__(self, pai, usuario, lista_service, tarefa_service):
+    def __init__(self, pai, usuario, usuario_service, lista_service, tarefa_service):
         super().__init__(pai, fg_color=PRETO)
-
-        self.usuario        = usuario
-        self.lista_service  = lista_service
-        self.tarefa_service = tarefa_service
+        self.pai             = pai
+        self.usuario         = usuario
+        self.usuario_service = usuario_service
+        self.lista_service   = lista_service
+        self.tarefa_service  = tarefa_service
         self.lista_selecionada = None
         self.sidebar_visivel = True
 
@@ -78,17 +79,18 @@ class TelaPrincipal(ctk.CTkFrame):
         frame_dir = ctk.CTkFrame(self.barra_top, fg_color="transparent")
         frame_dir.pack(side="right", padx=16)
 
-        ctk.CTkLabel(frame_dir,
+        self.label_usuario = ctk.CTkLabel(frame_dir,
                      text=self.usuario.nome.split()[0].lower(),
                      font=("JetBrains Mono", 12),
-                     text_color=CINZA_TEXT).pack(side="left", padx=(0, 12))
+                     text_color=CINZA_TEXT)
+        self.label_usuario.pack(side="left", padx=(0, 12))
 
         ctk.CTkButton(frame_dir, text="Config",
                       font=("JetBrains Mono", 12),
                       fg_color="transparent", border_width=1,
                       border_color=CINZA_BRD, text_color=BRANCO,
                       hover_color=CINZA_CARD, width=80, height=30,
-                      corner_radius=6).pack(side="left", padx=(0, 8))
+                      corner_radius=6, command=self._abrir_configuracoes).pack(side="left", padx=(0, 8))
 
         ctk.CTkButton(frame_dir, text="Sair",
                       font=("JetBrains Mono", 12),
@@ -516,10 +518,23 @@ class TelaPrincipal(ctk.CTkFrame):
         if ok:
             self.tarefa_service.excluir_tarefa(tarefa.id_tarefa)
             self._carregar_tarefas()
+    
+    def _abrir_configuracoes(self):
+        janela = JanelaEditarUsuario(master = self, usuario = self.usuario, pai=self.pai, usuario_service = self.usuario_service,
+                                      callback_atualizar = self._atualizar_usuario_na_tela)
+
+    def _atualizar_usuario_na_tela(self, usuario):
+        self.usuario = usuario
+        self.label_usuario.configure(text=self.usuario.nome.split()[0].lower())
 
     def _sair(self):
-        self.winfo_toplevel().destroy()
-
+        resposta = messagebox.askyesno("Atenção!", "Quer mesmo sair da sua conta?")
+        if not resposta:
+            return
+        pai = self.pai
+        for jan in pai.winfo_children():
+            jan.destroy()
+        pai._construir_ui()
 
 class _JanelaTarefaBase(ctk.CTkToplevel):
 
@@ -686,3 +701,101 @@ class JanelaEditarTarefa(_JanelaTarefaBase):
             self.destroy()
         except ValueError as e:
             self.label_erro.configure(text=str(e))
+
+# Tela de Configurações
+class JanelaEditarUsuario(ctk.CTkToplevel):
+    def __init__(self, pai, master, usuario, usuario_service, callback_atualizar=None):
+        super().__init__(master)
+        self.pai = pai
+        self.usuario = usuario
+        self.usuario_service = usuario_service
+        self.callback_atualizar = callback_atualizar
+        self.title("Configurações")
+        self.geometry("500x680")
+        self.resizable(False, False)
+        self.configure(fg_color=PRETO)
+        self.transient(master)
+        self.grab_set()
+        self._construir_ui()
+        self._preencher_campos()
+
+    def _construir_ui(self):
+        #Título
+        card = ctk.CTkFrame(self, fg_color=CINZA_CARD, corner_radius=12, border_width=1, border_color=CINZA_BRD)
+        card.pack(fill="both", expand = True, padx = 25, pady = 25)
+        ctk.CTkLabel(card, text="Configurações de Conta", font=("JetBrains Mono", 18, "bold"), text_color=BRANCO).pack(anchor="w", padx = 20, pady = (20, 20))
+        #Nome de usuário
+        ctk.CTkLabel(card, text="Nome de Usuário", font = ("JetBrains Mono", 18, "bold"), text_color=CINZA_TEXT).pack(anchor="w", padx=20)
+        self.entry_nome = ctk.CTkEntry(card, placeholder_text="Digite seu novo nome", font=("JetBrains Mono", 13), height=40, fg_color="#1a1a1a", border_color=CINZA_BRD, border_width=1, text_color=BRANCO, corner_radius=5)
+        self.entry_nome.pack(fill="x", padx = 20, pady=(4, 12))
+        #E-mail
+        ctk.CTkLabel(card, text="E-mail", font = ("JetBrains Mono", 18, "bold"), text_color=CINZA_TEXT).pack(anchor="w", padx=20)
+        self.entry_email = ctk.CTkEntry(card, placeholder_text="Digite seu novo e-mail", font=("JetBrains Mono", 13), height=40, fg_color="#1a1a1a", border_color=CINZA_BRD, border_width=1, text_color=BRANCO, corner_radius=5)
+        self.entry_email.pack(fill="x", padx = 20, pady=(4, 12))
+        #Senha
+        ctk.CTkLabel(card, text="Senha", font=("JetBrains Mono", 18, "bold"), text_color=CINZA_TEXT).pack(anchor="w", padx=20)
+        ctk.CTkLabel(card, text="Deixe em branco para manter a senha atual", font=("JetBrains Mono", 10), text_color=CINZA_TEXT).pack(anchor="w", padx=20)
+        self.entry_senha = ctk.CTkEntry(card, placeholder_text="Digite sua nova senha", show="*", font=("JetBrains Mono", 13), height=40, fg_color="#1a1a1a", border_color=CINZA_BRD, border_width=1, text_color=BRANCO, corner_radius=5)
+        self.entry_senha.pack(fill="x", padx = 20, pady=(4, 12))
+        #Confirmação de nova senha
+        ctk.CTkLabel(card, text="Confirmação de nova senha", font=("JetBrains Mono", 18, "bold"), text_color=CINZA_TEXT).pack(anchor="w", padx=20)
+        self.entry_confirmar = ctk.CTkEntry(card, placeholder_text="Digite sua nova senha novamente", show="*", font=("JetBrains Mono", 13), height=40, fg_color="#1a1a1a", border_color=CINZA_BRD, border_width=1, text_color=BRANCO, corner_radius=5)
+        self.entry_confirmar.pack(fill="x", padx = 20, pady=(4, 12))
+        #Mensagem de erro/sucesso
+        self.label_status = ctk.CTkLabel(card, text="", font=("JetBrains Mono", 11), text_color=ERRO, wraplength=420, justify="left")
+        self.label_status.pack(anchor="w", padx=20, pady=(0, 4))
+        #Botões
+        frame_botoes = ctk.CTkFrame(card, fg_color="transparent")
+        frame_botoes.pack(fill="x",padx=20, pady=0)
+        #Botão Salvar
+        ctk.CTkButton(frame_botoes, text="Salvar alterações", font=("JetBrains Mono", 13, "bold"), fg_color=VERDE_NEON, hover_color=VERDE_ESC, text_color=PRETO, height=42, corner_radius=5, command=self._salvar).pack(fill="x")
+        #Botão Cancelar
+        ctk.CTkButton(frame_botoes, text="Cancelar", font=("JetBrains Mono", 13), fg_color="transparent", border_width=1, border_color=CINZA_BRD, hover_color="#1a1a1a", text_color=BRANCO, height=38, corner_radius=5, command=self.destroy).pack(fill="x", pady=(10, 0))
+        #Botão Deletar Conta
+        ctk.CTkButton(frame_botoes, text="Apagar Conta", font=("JetBrains Mono", 13, "bold"), fg_color="#fb0a0a", hover_color="#9b0303", text_color=PRETO, height=42, corner_radius=5, command=self._excluir).pack(fill="x")
+
+    def _excluir(self):
+        resposta = messagebox.askyesno("Atenção", "Quer mesmo apagar toda a sua conta? Ação irreverssível!")
+        if resposta:
+            self.usuario_service.excluir_usuario(self.usuario.id_usuario)
+        if not resposta:
+            return
+        pai = self.pai
+        for jan in pai.winfo_children():
+            jan.destroy()
+        pai._construir_ui()
+
+    def _salvar(self):
+        nome = self.entry_nome.get().strip()
+        email = self.entry_email.get().strip()
+        senha = self.entry_senha.get().strip()
+        confirmar = self.entry_confirmar.get().strip()
+
+        try:
+            self.usuario_service.atualizar_usuario(self.usuario.id_usuario, nome, email)
+
+            if senha or confirmar:
+                if not senha or not confirmar:
+                    raise ValueError("Preencha os dois campos de senha.")
+                self.usuario_service.atualizar_senha(self.usuario.id_usuario, senha, confirmar)
+
+            usuario_atualizado = self.usuario_service.buscar_usuario_por_id(self.usuario.id_usuario)
+            self.usuario = usuario_atualizado
+
+            if self.callback_atualizar:
+                self.callback_atualizar(usuario_atualizado)
+
+            messagebox.showinfo("Sucesso", "Informações atualizadas com sucesso.", parent=self)
+            self.destroy()
+
+        except ValueError as e:
+            self._mostrar_status(str(e), ERRO)
+        except Exception as e:
+            self._mostrar_status(f"Erro inesperado: {e}", ERRO)
+
+    def _mostrar_status(self, mensagem: str, cor: str):
+        self.label_status.configure(text=mensagem, text_color=cor)
+
+    def _preencher_campos(self):
+        self.entry_nome.insert(0, self.usuario.nome)
+        self.entry_email.insert(0, self.usuario.email)

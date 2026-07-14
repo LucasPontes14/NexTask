@@ -260,7 +260,7 @@ class TelaLogin(ctk.CTk):
         for widget in self.winfo_children():
             widget.destroy()
         from interface.main_screen import TelaPrincipal
-        TelaPrincipal(self, usuario, self.lista_service, self.tarefa_service)
+        TelaPrincipal(self, usuario, self.usuario_service, self.lista_service, self.tarefa_service)
 
     def _voltar_login(self):
         for widget in self.winfo_children():

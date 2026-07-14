@@ -48,10 +48,10 @@ class UsuarioRepository:
         cursor = self.conexao.cursor()
         sql = """
             UPDATE usuario
-            SET nome = %s, email = %s
+            SET nome = %s, email = %s, senha = %s
             WHERE id_usuario = %s
         """
-        cursor.execute(sql, (usuario.nome, usuario.email, usuario.id_usuario))
+        cursor.execute(sql, (usuario.nome, usuario.email, usuario.senha, usuario.id_usuario))
         self.conexao.commit()
         atualizado = cursor.rowcount > 0
         cursor.close()
